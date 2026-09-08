@@ -130,6 +130,34 @@ graph TD
   M -->|10. Rollover & Gzip| N[production_log.gz]
 ```
 
+## Cómo Usar
+
+### Ejemplos:
+
+#### Escenario A: Operación Nominal Completa (Éxito Rotundo)
+
+Lanzamos una **consulta asíncrona hacia AWS y GCP** fijando un rango seguro de `timeout` y un formato de ID de clúster válido:
+
+```bash
+python src/app_operator.py AWS GCP -c cluster-us-east-01 -t 3.0
+```
+
+#### Escenario B: Validación Temprana de Argumentos Fallida (Frontera CLI)
+
+Intentamos **ejecutar inyectando un ID de clúster mal formulado** o un `timeout` absurdo fuera de rango:
+
+```bash
+python src/app_operator.py AWS GCP -c cluster-invalido-id -t 9.5
+```
+
+#### Escenario C: Inyección de Caos (Fallos Concurrentes y Árbol `ExceptionGroup`)
+
+Forzamos la ocurrencia de incidentes de red reales en caliente activando la bandera **`--chaos`** y **limitando el tiempo de espera a `1.5` segundos** (provocará que **`AWS`** colapse por **`timeout`** en **`httpbin`**, **`GCP`** falle por formato de payload corrupto al devolver **`XML`** e inyectará un código **`504`** a **`Azure`**):
+
+```bash
+python src/app_operator.py AWS Azure GCP -c cluster-us-west-02 -t 1.5 --chaos
+```
+
 ---
 
 ## Equipo de desarrollo
